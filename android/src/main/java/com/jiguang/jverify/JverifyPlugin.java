@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -12,11 +13,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -900,6 +903,29 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
         }
 
         builder.enableHintToast((Boolean) privacyHintToast, null);
+
+        //　修改默认toast样式
+        try {
+            View toastRoot = LayoutInflater.from(context).inflate(R.layout.toast_layout, null);
+            TextView textView = toastRoot.findViewById(R.id.tvToastContent);
+            textView.setText("请阅读并同意相关协议");
+            textView.setTextSize(15);
+            textView.setTextColor(Color.WHITE);
+//            Toast toast = new Toast(context);
+            Toast toast = Toast.makeText(context, "", Toast.LENGTH_SHORT);
+            toast.setView(toastRoot);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+
+            Field field = builder.getClass().getDeclaredField("toast");
+            field.setAccessible(true);
+            field.set(builder, toast);
+
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         /************** 授权页弹窗模式 ***************/
         if (popViewConfig != null) {
             Map popViewConfigMap = (Map) popViewConfig;

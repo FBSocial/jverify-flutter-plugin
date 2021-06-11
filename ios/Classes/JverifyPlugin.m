@@ -420,6 +420,57 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     return [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeHeight multiplier:1 constant:height];
 }
 
+#pragma mark - 自定义Toast
+- (void)toastWithMessage:(NSString *)message {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        CGFloat screenWidth = [[UIScreen mainScreen] bounds].size.width;
+        CGFloat screenHeight = [[UIScreen mainScreen] bounds].size.height;
+        
+        // 需要调整的参数
+        CGFloat horzontalMargin = 64;
+        CGFloat horizontalPadding = 20;
+        CGFloat verticalPadding = 10;
+        UIColor *bgColor = [UIColor colorWithRed:.0 green:.0 blue:.0 alpha:0.88];
+        
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        UIView *toastView = [[UIView alloc] init];
+    
+        toastView.backgroundColor = bgColor;
+        toastView.layer.cornerRadius = 8;
+        toastView.layer.masksToBounds = YES;
+        
+        UILabel *messageLabel = [[UILabel alloc] init];
+        messageLabel.text = message;
+        messageLabel.numberOfLines = 0;
+        messageLabel.textColor = [UIColor whiteColor];
+        messageLabel.font = [UIFont systemFontOfSize:15];
+        messageLabel.textAlignment = NSTextAlignmentCenter;
+        
+        // 求message最小空间
+        CGSize minSize = [message boundingRectWithSize:CGSizeMake(screenWidth - horzontalMargin * 2, screenHeight * 0.5) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:messageLabel.font} context:nil].size;
+        CGFloat width = minSize.width;
+        CGFloat height = minSize.height;
+
+        toastView.frame = CGRectMake(horzontalMargin, 0.0, width + horizontalPadding * 2, height + verticalPadding * 2);
+        toastView.center = CGPointMake(keyWindow.center.x, keyWindow.center.y);
+        [keyWindow addSubview:toastView];
+
+        messageLabel.frame = CGRectMake(horizontalPadding, verticalPadding, width, height);
+        [toastView addSubview:messageLabel];
+        messageLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        messageLabel.adjustsFontSizeToFitWidth = YES;
+
+        [UIView animateWithDuration:1.0
+                             delay:1.0
+                           options:UIViewAnimationOptionCurveEaseOut
+                        animations:^{
+           toastView.alpha = 0.0;
+        } completion:^(BOOL finished) {
+           [toastView removeFromSuperview];
+        }];
+    }];
+}
+
 //自定义授权页面原有的 UI 控件
 - (void)setCustomUIWithUIConfig:(JVUIConfig *)uiconfig configArguments:(NSDictionary *)config {
     JVLog(@"Action - setCustomUIWithUIConfig::");
@@ -619,16 +670,17 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     }
     BOOL privacyCheckboxInCenter = [[self getValue:config key:@"privacyCheckboxInCenter"] boolValue];
     
-    JVLayoutConstraint *box_cons_x = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeLeft multiplier:1 constant:0];
-    JVLayoutConstraint *box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeTop multiplier:1 constant:3];
-    if (privacyCheckboxInCenter) {
-        box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeCenterY multiplier:1 constant:0];
-    }
-    JVLayoutConstraint *box_cons_w = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeWidth multiplier:1 constant:privacyCheckboxSize];
-    JVLayoutConstraint *box_cons_h = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeHeight multiplier:1 constant:privacyCheckboxSize];
-    
-    uiconfig.checkViewConstraints = @[box_cons_x,box_cons_y,box_cons_w,box_cons_h];
-    uiconfig.checkViewHorizontalConstraints = uiconfig.checkViewConstraints;
+    CGFloat checkBoxPadding = 6;
+//    JVLayoutConstraint *box_cons_x = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeLeft multiplier:1 constant:0];
+//    JVLayoutConstraint *box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeTop multiplier:1 constant:3];
+//    if (privacyCheckboxInCenter) {
+//        box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeCenterY multiplier:1 constant:0];
+//    }
+//    JVLayoutConstraint *box_cons_w = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeWidth multiplier:1 constant:privacyCheckboxSize];
+//    JVLayoutConstraint *box_cons_h = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeHeight multiplier:1 constant:privacyCheckboxSize];
+//
+//    uiconfig.checkViewConstraints = @[box_cons_x,box_cons_y,box_cons_w,box_cons_h];
+//    uiconfig.checkViewHorizontalConstraints = uiconfig.checkViewConstraints;
     
     BOOL privacyCheckboxHidden = [[self getValue:config key:@"privacyCheckboxHidden"] boolValue];
     uiconfig.checkViewHidden = privacyCheckboxHidden;
@@ -649,10 +701,10 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     BOOL privacyHintToast = [[self getValue:config key:@"privacyHintToast"] boolValue];
     if(privacyHintToast){
         uiconfig.customPrivacyAlertViewBlock = ^(UIViewController *vc) {
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"请点击同意协议" message:nil preferredStyle:UIAlertControllerStyleAlert];
-            [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil] ];
-            [vc presentViewController:alert animated:true completion:nil];
-            
+//            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"请点击同意协议" message:nil preferredStyle:UIAlertControllerStyleAlert];
+//            [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil] ];
+//            [vc presentViewController:alert animated:true completion:nil];
+            [self toastWithMessage:@"请阅读并同意相关协议"];
         };
     }
     
@@ -695,23 +747,31 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     NSNumber *privacyOffsetY = [self getNumberValue:config key:@"privacyOffsetY"];
     NSNumber *privacyOffsetX = [self getValue:config key:@"privacyOffsetX"];
     
-    CGFloat privacyLeftSpace = 0;
-    CGFloat privacyRightSpace = 15;
-    if (privacyOffsetX == nil) {
-        uiconfig.privacyTextAlignment = NSTextAlignmentCenter;
-        privacyOffsetX = @(15);
-        privacyLeftSpace = [privacyOffsetX floatValue] + privacyCheckboxSize;
-        privacyRightSpace = privacyCheckboxSize;
-    }else{
-        privacyLeftSpace = [privacyOffsetX floatValue];
-        privacyRightSpace = privacyLeftSpace - privacyCheckboxSize;
-    }
+//    CGFloat privacyLeftSpace = 0;
+//    CGFloat privacyRightSpace = 15;
+//    if (privacyOffsetX == nil) {
+//        uiconfig.privacyTextAlignment = NSTextAlignmentCenter;
+//        privacyOffsetX = @(15);
+//        privacyLeftSpace = [privacyOffsetX floatValue] + privacyCheckboxSize;
+//        privacyRightSpace = privacyCheckboxSize;
+//    }else{
+//        privacyLeftSpace = [privacyOffsetX floatValue];
+//        privacyRightSpace = privacyLeftSpace - privacyCheckboxSize;
+//    }
+//
+    CGFloat privacyLeftSpace = [privacyOffsetX floatValue] + privacyCheckboxSize + checkBoxPadding;
+    CGFloat privacyRightSpace = [privacyOffsetX floatValue];
     
     tempSting = [tempSting stringByAppendingString:@"《xxx统一认证服务条款》"];
-    CGFloat lableWidht = [UIScreen mainScreen].bounds.size.width - [privacyOffsetX floatValue]*2 - privacyCheckboxSize*3;
+//    CGFloat lableWidht = [UIScreen mainScreen].bounds.size.width - [privacyOffsetX floatValue]*2 - privacyCheckboxSize*3;
+//    CGSize lablesize = [tempSting boundingRectWithSize:CGSizeMake(lableWidht, MAXFLOAT)
+//                                          options:NSStringDrawingUsesLineFragmentOrigin
+//                                       attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:[privacyTextSize floatValue]+2]}
+//                                          context:nil].size;
+    CGFloat lableWidht = [UIScreen mainScreen].bounds.size.width - privacyLeftSpace - privacyRightSpace;
     CGSize lablesize = [tempSting boundingRectWithSize:CGSizeMake(lableWidht, MAXFLOAT)
                                           options:NSStringDrawingUsesLineFragmentOrigin
-                                       attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:[privacyTextSize floatValue]+2]}
+                                       attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:[privacyTextSize floatValue]]}
                                           context:nil].size;
     
     JVLayoutConstraint *privacy_cons_left = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemSuper attribute:NSLayoutAttributeLeft multiplier:1 constant:privacyLeftSpace];
@@ -725,6 +785,21 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         uiconfig.privacyConstraints = @[privacy_cons_left,privacy_cons_y,privacy_cons_right,privacy_cons_h];
         uiconfig.privacyHorizontalConstraints = uiconfig.privacyConstraints;
     }
+    
+    JVLayoutConstraint *box_cons_x = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeLeft multiplier:1 constant:-checkBoxPadding];
+//    JVLayoutConstraint *box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeTop multiplier:1 constant:0];
+    CGFloat boxY = privacyCheckboxSize / 2 - lablesize.height / 2 - 2;
+    JVLayoutConstraint *box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeCenterY multiplier:1 constant:boxY];
+    
+    if (privacyCheckboxInCenter) {
+        box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeCenterY multiplier:1 constant:0];
+    }
+
+    JVLayoutConstraint *box_cons_w = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeWidth multiplier:1 constant:privacyCheckboxSize];
+    JVLayoutConstraint *box_cons_h = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeHeight multiplier:1 constant:privacyCheckboxSize];
+    
+    uiconfig.checkViewConstraints = @[box_cons_x,box_cons_y,box_cons_w,box_cons_h];
+    uiconfig.checkViewHorizontalConstraints = uiconfig.checkViewConstraints;
     
     NSNumber *clauseBaseColor = [self getValue:config key:@"clauseBaseColor"];
     UIColor *privacyBasicColor =[UIColor grayColor];
