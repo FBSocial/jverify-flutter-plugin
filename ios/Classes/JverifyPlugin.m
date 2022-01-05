@@ -479,7 +479,15 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     uiconfig.preferredStatusBarStyle = [self getStatusBarStyle:authStatusBarStyle];
     uiconfig.agreementPreferredStatusBarStyle = [self getStatusBarStyle:privacyStatusBarStyle];
     uiconfig.dismissAnimationFlag = needCloseAnim;
-    
+    if ([[config allKeys] containsObject:@"authBGVideoPath"] && [[config allKeys] containsObject:@"authBGVideoImgPath"]) {
+        [uiconfig setVideoBackgroudResource:[config objectForKey:@"authBGVideoPath"] placeHolder:[config objectForKey:@"authBGVideoImgPath"]];
+    }
+    if ([[config allKeys] containsObject:@"authBGGifPath"]) {
+        NSString *gitPath = [[NSBundle mainBundle] pathForResource:[config objectForKey:@"authBGGifPath"] ofType:@"gif"];
+        if (gitPath) {
+            uiconfig.authPageGifImagePath = gitPath;
+        }
+    }
     /************** 弹出方式 ***************/
     UIModalTransitionStyle transitionStyle = [self getTransitionStyle:[self getValue:config key:@"modelTransitionStyle"]];
     uiconfig.modalTransitionStyle = transitionStyle;
@@ -664,13 +672,16 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     uiconfig.logBtnImgs = images;
     
     /************** chck box ***************/
+    NSNumber *privacyOffsetY = [self getNumberValue:config key:@"privacyOffsetY"];
+    NSNumber *privacyOffsetX = [self getValue:config key:@"privacyOffsetX"];
+    
     CGFloat privacyCheckboxSize = [[self getNumberValue:config key:@"privacyCheckboxSize"] floatValue];
     if (privacyCheckboxSize == 0) {
         privacyCheckboxSize = 20.0;
     }
     BOOL privacyCheckboxInCenter = [[self getValue:config key:@"privacyCheckboxInCenter"] boolValue];
     
-    CGFloat checkBoxPadding = 6;
+// by leaf    CGFloat checkBoxPadding = 6;
 //    JVLayoutConstraint *box_cons_x = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeLeft multiplier:1 constant:0];
 //    JVLayoutConstraint *box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeTop multiplier:1 constant:3];
 //    if (privacyCheckboxInCenter) {
@@ -684,6 +695,28 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     
     BOOL privacyCheckboxHidden = [[self getValue:config key:@"privacyCheckboxHidden"] boolValue];
     uiconfig.checkViewHidden = privacyCheckboxHidden;
+    CGFloat privacyLeftSpace = 0;
+    
+    if (privacyOffsetX == nil) {
+        uiconfig.privacyTextAlignment = NSTextAlignmentCenter;
+        privacyOffsetX =  @(15);
+        
+    }
+    privacyLeftSpace = privacyCheckboxHidden ? [privacyOffsetX floatValue] : ([privacyOffsetX floatValue]+privacyCheckboxSize+5+5);//算上CheckBox的左右间隙;
+    CGFloat privacyRightSpace = [privacyOffsetX floatValue] ;
+    
+    
+    //checkbox
+    JVLayoutConstraint *box_cons_x = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeLeft multiplier:1 constant:-[privacyOffsetX floatValue]/2];
+    JVLayoutConstraint *box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeTop multiplier:1 constant:3];
+    if (privacyCheckboxInCenter) {
+        box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeCenterY multiplier:1 constant:0];
+    }
+    JVLayoutConstraint *box_cons_w = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeWidth multiplier:1 constant:privacyCheckboxSize];
+    JVLayoutConstraint *box_cons_h = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeHeight multiplier:1 constant:privacyCheckboxSize];
+    
+    uiconfig.checkViewConstraints = @[box_cons_x,box_cons_y,box_cons_w,box_cons_h];
+    uiconfig.checkViewHorizontalConstraints = uiconfig.checkViewConstraints;
     
     NSNumber *privacyState = [self getValue:config key:@"privacyState"];
     uiconfig.privacyState = [privacyState boolValue];
@@ -698,6 +731,81 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     }
 
     /************** privacy ***************/
+    
+    //自定义协议
+    NSString *tempSting = @"";
+    BOOL privacyWithBookTitleMark = [[self getValue:config key:@"privacyWithBookTitleMark"] boolValue];
+    
+    NSMutableArray *appPrivacyss = [NSMutableArray array];
+    if([[config allKeys] containsObject:@"privacyText"] && [[config objectForKey:@"privacyText"] isKindOfClass:[NSArray class]])
+    {
+        if ([[config objectForKey:@"privacyText"] count]>=1) {
+            [appPrivacyss addObject:[[config objectForKey:@"privacyText"] objectAtIndex:0]];
+            tempSting = [tempSting stringByAppendingString:[[config objectForKey:@"privacyText"] objectAtIndex:0]];
+        }
+        
+    }
+    if([[config allKeys] containsObject:@"privacyItem"] && [[config objectForKey:@"privacyItem"] isKindOfClass:[NSString class]]){
+        NSString *privacyJson = [config objectForKey:@"privacyItem"];
+        NSData *privacyData = [privacyJson  dataUsingEncoding:NSUTF8StringEncoding];
+        NSArray *privacys= [NSJSONSerialization JSONObjectWithData:privacyData options:0 error:nil];
+        for (NSInteger i = 0; i<privacys.count; i++) {
+            NSMutableArray *item = [NSMutableArray array];
+            
+            NSDictionary *obj = [privacys objectAtIndex:i];
+            
+            //加入协议之间的分隔符
+            if ([[obj allKeys] containsObject:@"separator"] ) {
+                [item addObject:[obj objectForKey:@"separator"]];
+                tempSting = [tempSting stringByAppendingString:[obj objectForKey:@"separator"]];
+            }
+            //加入name
+            if ([[obj allKeys] containsObject:@"name"] ) {
+                [item addObject:[obj objectForKey:@"name"]];
+                tempSting = [tempSting stringByAppendingFormat:@"%@%@%@",(privacyWithBookTitleMark?@"《":@""),[obj objectForKey:@"name"],(privacyWithBookTitleMark?@"》":@"")];
+                
+            }
+            //加入url
+            if ([[obj allKeys] containsObject:@"url"] ) {
+                [item addObject:[obj objectForKey:@"url"]];
+            }
+            //加入协议详细页面的导航栏文字 可以是NSAttributedString类型 自定义  这里是直接拿name进行展示
+            if ([[obj allKeys] containsObject:@"name"] ) {
+                UIColor *privacyNavTitleTextColor = UIColorFromRGB(-1);
+                if ([self getValue:config key:@"privacyNavTitleTextColor"]) {
+                    privacyNavTitleTextColor = UIColorFromRGB([[self getValue:config key:@"privacyNavTitleTextColor"] intValue]);
+                }
+                NSNumber *privacyNavTitleTextSize = [self getValue:config key:@"privacyNavTitleTextSize"];
+                if (!privacyNavTitleTextSize) {
+                    privacyNavTitleTextSize = @(16);
+                }
+                NSDictionary *privayNavTextAttr = @{NSForegroundColorAttributeName:privacyNavTitleTextColor,
+                                                    NSFontAttributeName:[UIFont systemFontOfSize:[privacyNavTitleTextSize floatValue]]};
+                NSAttributedString *privayAttr = [[NSAttributedString alloc]initWithString:[obj objectForKey:@"name"] attributes:privayNavTextAttr];
+                if(privayAttr){
+                    [item addObject:privayAttr];
+                }
+            }
+            //添加一条协议appPrivacyss中
+            [appPrivacyss addObject:item];
+            
+        }
+    }
+    //设置尾部
+    if([[config allKeys] containsObject:@"privacyText"] && [[config objectForKey:@"privacyText"] isKindOfClass:[NSArray class]])
+    {
+        if ([[config objectForKey:@"privacyText"] count]>=2) {
+            [appPrivacyss addObject:[[config objectForKey:@"privacyText"] objectAtIndex:1]];
+            tempSting = [tempSting stringByAppendingString:[[config objectForKey:@"privacyText"] objectAtIndex:1]];
+        }
+        
+    }
+    
+    //设置
+    if (appPrivacyss.count>1) {
+        uiconfig.appPrivacys = appPrivacyss;
+    }
+    
     BOOL privacyHintToast = [[self getValue:config key:@"privacyHintToast"] boolValue];
     if(privacyHintToast){
         uiconfig.customPrivacyAlertViewBlock = ^(UIViewController *vc) {
@@ -714,26 +822,24 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     NSTextAlignment alignmet = isCenter?NSTextAlignmentCenter:NSTextAlignmentLeft;
     uiconfig.privacyTextAlignment = alignmet;
     
-    BOOL privacyWithBookTitleMark = [[self getValue:config key:@"privacyWithBookTitleMark"] boolValue];
     uiconfig.privacyShowBookSymbol = privacyWithBookTitleMark;
     
-    NSString *tempSting = @"";
     NSString *clauseName = [self getValue:config key:@"clauseName"];
     NSString *clauseUrl = [self getValue:config key:@"clauseUrl"];
-    if (clauseName && clauseUrl) {
+    if (![[config allKeys] containsObject:@"privacyItem"]  && clauseName && clauseUrl) {
         uiconfig.appPrivacyOne  = @[clauseName,clauseUrl];
         tempSting = [tempSting stringByAppendingFormat:@"%@%@%@",(privacyWithBookTitleMark?@"《":@""),clauseName,(privacyWithBookTitleMark?@"》":@"")];
     }
     
     NSString *clauseNameTwo = [self getValue:config key:@"clauseNameTwo"];
     NSString *clauseUrlTwo = [self getValue:config key:@"clauseUrlTwo"];
-    if (clauseNameTwo && clauseUrlTwo) {
+    if (![[config allKeys] containsObject:@"privacyItem"]  && clauseNameTwo && clauseUrlTwo) {
         uiconfig.appPrivacyTwo  = @[clauseNameTwo,clauseUrlTwo];
         tempSting = [tempSting stringByAppendingFormat:@"%@%@%@",(privacyWithBookTitleMark?@"《":@""),clauseNameTwo,(privacyWithBookTitleMark?@"》":@"")];
     }
     
     NSArray *privacyComponents = [self getValue:config key:@"privacyText"];
-    if (privacyComponents.count) {
+    if (![[config allKeys] containsObject:@"privacyItem"]  && privacyComponents.count) {
         uiconfig.privacyComponents = privacyComponents;
         tempSting = [tempSting stringByAppendingString:[privacyComponents componentsJoinedByString:@"、"]];
     }
@@ -744,62 +850,36 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     }
     
     JVLayoutItem privacyLayoutItem = [self getLayotItem:[self getValue:config key:@"privacyVerticalLayoutItem"]];
-    NSNumber *privacyOffsetY = [self getNumberValue:config key:@"privacyOffsetY"];
-    NSNumber *privacyOffsetX = [self getValue:config key:@"privacyOffsetX"];
     
-//    CGFloat privacyLeftSpace = 0;
-//    CGFloat privacyRightSpace = 15;
-//    if (privacyOffsetX == nil) {
-//        uiconfig.privacyTextAlignment = NSTextAlignmentCenter;
-//        privacyOffsetX = @(15);
-//        privacyLeftSpace = [privacyOffsetX floatValue] + privacyCheckboxSize;
-//        privacyRightSpace = privacyCheckboxSize;
-//    }else{
-//        privacyLeftSpace = [privacyOffsetX floatValue];
-//        privacyRightSpace = privacyLeftSpace - privacyCheckboxSize;
-//    }
-//
-    CGFloat privacyLeftSpace = [privacyOffsetX floatValue] + privacyCheckboxSize + checkBoxPadding;
-    CGFloat privacyRightSpace = [privacyOffsetX floatValue];
+    int widthScreen =  [UIScreen mainScreen].bounds.size.width;
+    NSDictionary *popViewConfig = [self getValue:config key:@"popViewConfig"];
+    if (popViewConfig) {
+        widthScreen = [[self getValue:popViewConfig key:@"width"] intValue];
+    }
+    tempSting = [tempSting stringByAppendingString:@"《中国移动统一认证服务条款》"];
+    CGFloat lableWidht  = widthScreen - (privacyLeftSpace + privacyRightSpace);
+    CGSize lablesize = [tempSting boundingRectWithSize:CGSizeMake(lableWidht, CGFLOAT_MAX)
+                                               options:NSStringDrawingUsesLineFragmentOrigin
+                                            attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:[privacyTextSize floatValue]]}
+                                               context:nil].size;
     
-    tempSting = [tempSting stringByAppendingString:@"《xxx统一认证服务条款》"];
-//    CGFloat lableWidht = [UIScreen mainScreen].bounds.size.width - [privacyOffsetX floatValue]*2 - privacyCheckboxSize*3;
-//    CGSize lablesize = [tempSting boundingRectWithSize:CGSizeMake(lableWidht, MAXFLOAT)
-//                                          options:NSStringDrawingUsesLineFragmentOrigin
-//                                       attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:[privacyTextSize floatValue]+2]}
-//                                          context:nil].size;
-    CGFloat lableWidht = [UIScreen mainScreen].bounds.size.width - privacyLeftSpace - privacyRightSpace;
-    CGSize lablesize = [tempSting boundingRectWithSize:CGSizeMake(lableWidht, MAXFLOAT)
-                                          options:NSStringDrawingUsesLineFragmentOrigin
-                                       attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:[privacyTextSize floatValue]]}
-                                          context:nil].size;
-    
-    JVLayoutConstraint *privacy_cons_left = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemSuper attribute:NSLayoutAttributeLeft multiplier:1 constant:privacyLeftSpace];
-    JVLayoutConstraint *privacy_cons_right = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemSuper attribute:NSLayoutAttributeRight multiplier:1 constant:-(privacyRightSpace)];
+    JVLayoutConstraint *privacy_cons_x = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemSuper attribute:NSLayoutAttributeLeft multiplier:1 constant:privacyLeftSpace];
     JVLayoutConstraint *privacy_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemSuper attribute:NSLayoutAttributeBottom multiplier:1 constant:-[privacyOffsetY floatValue]];
+    JVLayoutConstraint *privacy_cons_w = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeWidth multiplier:1 constant:lableWidht];
     JVLayoutConstraint *privacy_cons_h = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeHeight multiplier:1 constant:lablesize.height];
     
     if (privacyLayoutItem == JVLayoutItemNone) {
         uiconfig.privacyOffsetY = [privacyOffsetY floatValue];
     }else{
-        uiconfig.privacyConstraints = @[privacy_cons_left,privacy_cons_y,privacy_cons_right,privacy_cons_h];
+        uiconfig.privacyConstraints = @[privacy_cons_x,privacy_cons_y,privacy_cons_w,privacy_cons_h];
         uiconfig.privacyHorizontalConstraints = uiconfig.privacyConstraints;
     }
-    
-    JVLayoutConstraint *box_cons_x = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeLeft multiplier:1 constant:-checkBoxPadding];
-//    JVLayoutConstraint *box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeTop multiplier:1 constant:0];
-    CGFloat boxY = privacyCheckboxSize / 2 - lablesize.height / 2 - 2;
-    JVLayoutConstraint *box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeCenterY multiplier:1 constant:boxY];
-    
-    if (privacyCheckboxInCenter) {
-        box_cons_y = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemPrivacy attribute:NSLayoutAttributeCenterY multiplier:1 constant:0];
+    //隐私条款垂直对齐方式
+    if ([[config allKeys] containsObject:@"textVerAlignment"]) {
+        uiconfig.textVerAlignment = [[config objectForKey:@"textVerAlignment"] intValue];
+    }else{
+        uiconfig.textVerAlignment = JVVerAlignmentMiddle;
     }
-
-    JVLayoutConstraint *box_cons_w = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeWidth multiplier:1 constant:privacyCheckboxSize];
-    JVLayoutConstraint *box_cons_h = [JVLayoutConstraint constraintWithAttribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:JVLayoutItemNone attribute:NSLayoutAttributeHeight multiplier:1 constant:privacyCheckboxSize];
-    
-    uiconfig.checkViewConstraints = @[box_cons_x,box_cons_y,box_cons_w,box_cons_h];
-    uiconfig.checkViewHorizontalConstraints = uiconfig.checkViewConstraints;
     
     NSNumber *clauseBaseColor = [self getValue:config key:@"clauseBaseColor"];
     UIColor *privacyBasicColor =[UIColor grayColor];
@@ -836,6 +916,7 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
                                         NSFontAttributeName:[UIFont systemFontOfSize:[privacyNavTitleTextSize floatValue]]};
     NSAttributedString *privayAttr = [[NSAttributedString alloc]initWithString:privacyNavText attributes:privayNavTextAttr];
     uiconfig.agreementNavText = privayAttr;
+    uiconfig.agreementNavTextColor = privacyNavTitleTextColor;
     
     NSString *privacyNavReturnBtnImage =[self getValue:config key:@"privacyNavReturnBtnImage"];
     if(privacyNavReturnBtnImage){
@@ -872,7 +953,6 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
     uiconfig.loadingHorizontalConstraints = uiconfig.loadingConstraints;
     
     /************** 窗口模式样式设置 ***************/
-    NSDictionary *popViewConfig = [self getValue:config key:@"popViewConfig"];
     if (popViewConfig) {
         NSNumber *isPopViewTheme = [self getValue:popViewConfig key:@""];
         NSNumber *width = [self getValue:popViewConfig key:@"width"];
@@ -890,7 +970,12 @@ JVLayoutConstraint *JVLayoutHeight(CGFloat height) {
         uiconfig.navCustom = YES;
         uiconfig.windowCornerRadius = [popViewCornerRadius floatValue];
         uiconfig.windowBackgroundAlpha = [backgroundAlpha floatValue];
-
+        
+        // 弹窗模式背景图
+        if (authBackgroundImage) {
+            uiconfig.windowBackgroundImage = [UIImage imageNamed:authBackgroundImage];
+        }
+        
         CGFloat windowW = [width floatValue];
         CGFloat windowH = [height floatValue];
         CGFloat windowX = [offsetCenterX floatValue];
