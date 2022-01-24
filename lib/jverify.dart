@@ -70,6 +70,11 @@ class Jverify {
 
   static final _instance = new Jverify.private(const MethodChannel("jverify"));
 
+  /// 添加原生toast方法
+  showNativeToast(String content) {
+    _channel.invokeMethod('showNativeToast', {"content": content});
+  }
+
   /// 自定义控件的点击事件
   addClikWidgetEventListener(
       String eventId, JVClickWidgetEventListener callback) {
@@ -543,7 +548,7 @@ class JVUIConfig {
   List<JVPrivacy>? privacyItem;
   bool privacyWithBookTitleMark = true; //设置隐私条款运营商协议名是否加书名号
   bool privacyTextCenterGravity = false; //隐私条款文字是否居中对齐（默认左对齐）
-  int? textVerAlignment  = 1;//设置条款文字是否垂直居中对齐(默认居中对齐) 0是top 1是m 2是b
+  int? textVerAlignment = 1; //设置条款文字是否垂直居中对齐(默认居中对齐) 0是top 1是m 2是b
   int? privacyTopOffsetY;
   bool? privacyTextBold;
   bool? privacyUnderlineText; //设置隐私条款文字字体是否加下划线
@@ -694,7 +699,7 @@ class JVUIConfig {
       "enterAnim": enterAnim,
       "exitAnim": exitAnim,
       "privacyNavTitleTitle": privacyNavTitleTitle ??= null,
-      "textVerAlignment":textVerAlignment,
+      "textVerAlignment": textVerAlignment,
     }..removeWhere((key, value) => value == null);
   }
 }
@@ -905,7 +910,7 @@ class JVPrivacy {
   String? url;
   String? beforeName;
   String? afterName;
-  String? separator;//ios分隔符专属
+  String? separator; //ios分隔符专属
 
   JVPrivacy(this.name, this.url,
       {this.beforeName, this.afterName, this.separator});

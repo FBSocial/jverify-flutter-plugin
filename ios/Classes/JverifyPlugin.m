@@ -68,11 +68,21 @@ NSObject<FlutterPluginRegistrar>* _jv_registrar;
         [self getSMSCode:call result:result];
     }else if ([methodName isEqualToString:@"setGetCodeInternal"]){
         [self setGetCodeInternal:call result:result];
+    }else if ([methodName isEqualToString:@"showNativeToast"]) {
+        [self showNativeToast:call result:result];
     }
     else {
         result(FlutterMethodNotImplemented);
     }
 }
+
+- (void)showNativeToast:(FlutterMethodCall*)call result:(FlutterResult)result{
+    NSDictionary *arguments = call.arguments;
+    NSString *content = arguments[@"content"];
+    [self toastWithMessage:content];
+    result(nil);
+}
+
 #pragma mark -SMS
 - (void)getSMSCode:(FlutterMethodCall*) call result:(FlutterResult)resultDict{
     NSDictionary *arguments = call.arguments;

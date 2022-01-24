@@ -127,11 +127,28 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
             getSMSCode(call, result);
         } else if (call.method.equals("setSmsIntervalTime")) {
             setGetCodeInternal(call, result);
+        } else if (call.method.equals("showNativeToast")) {
+            showNativeToast(call, result);
         } else {
             result.notImplemented();
         }
     }
 
+    private void showNativeToast(MethodCall call, Result result) {
+        String content = (String) call.argument("content");
+
+        View toastRoot = LayoutInflater.from(context).inflate(R.layout.toast_layout, null);
+        TextView textView = toastRoot.findViewById(R.id.tvToastContent);
+        textView.setText(content);
+        textView.setTextSize(15);
+        textView.setTextColor(Color.WHITE);
+        Toast toast = Toast.makeText(context, "", Toast.LENGTH_SHORT);
+        toast.setView(toastRoot);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+
+        result.success(null);
+    }
 
     // 主线程再返回数据
     private void runMainThread(final Map<String, Object> map, final Result result, final String method) {
