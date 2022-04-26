@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'jverify'
-  s.version          = '0.0.3'
+  s.version          = '0.0.5'
   s.summary          = 'A new flutter plugin project.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -15,8 +15,8 @@ A new flutter plugin project.
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'JCore', '3.1.0'
-  s.dependency 'JVerification', '2.7.6'
+  s.dependency 'JCore', '3.2.0'
+  s.dependency 'JVerification', '2.7.8'
   s.ios.deployment_target = '8.0'
   s.static_framework = true
 end
