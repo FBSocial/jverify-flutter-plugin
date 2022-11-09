@@ -51,7 +51,7 @@ class Jverify {
   }
 
   Future<void> _handlerMethod(MethodCall call) async {
-    print("handleMethod method = ${call.method}");
+    debugPrint("handleMethod method = ${call.method}");
     switch (call.method) {
       case 'onReceiveSDKSetupCallBackEvent':
         {
@@ -75,7 +75,7 @@ class Jverify {
         j_flutter_code_key: j_flutter_error_code_repeat,
         j_flutter_msg_key: method + " is requesting, please try again later."
       };
-      print(flutter_log + map.toString());
+      debugPrint(flutter_log + map.toString());
       return map;
     } else {
       requestQueue.add(method);
@@ -90,7 +90,7 @@ class Jverify {
       bool? useIDFA,
       int timeout = 10000,
       bool setControlWifiSwitch = true}) {
-    print("$flutter_log" + "setup");
+    debugPrint("$flutter_log" + "setup");
 
     _channel.setMethodCallHandler(_handlerMethod);
 
@@ -105,13 +105,13 @@ class Jverify {
 
   /// 设置 debug 模式
   void setDebugMode(bool debug) {
-    print("$flutter_log" + "setDebugMode");
+    debugPrint("$flutter_log" + "setDebugMode");
     _channel.invokeMethod("setDebugMode", {"debug": debug});
   }
 
   ///设置前后两次获取验证码的时间间隔，默认 30000ms，有效范围(0,300000)
   void setGetCodeInternal(int intervalTime) {
-    print("$flutter_log" + "setGetCodeInternal");
+    debugPrint("$flutter_log" + "setGetCodeInternal");
     _channel.invokeMethod("setGetCodeInternal", {"timeInterval": intervalTime});
   }
 
@@ -125,7 +125,7 @@ class Jverify {
    * */
   Future<Map<dynamic, dynamic>> getSMSCode(
       {@required String? phoneNum, String? signId, String? tempId}) async {
-    print("$flutter_log" + "getSMSCode");
+    debugPrint("$flutter_log" + "getSMSCode");
 
     var args = <String, String>{};
     if (phoneNum != null) {
@@ -151,7 +151,7 @@ class Jverify {
    *          vlue = bool,是否成功
    * */
   Future<Map<dynamic, dynamic>> isInitSuccess() async {
-    print("$flutter_log" + "isInitSuccess");
+    debugPrint("$flutter_log" + "isInitSuccess");
     return await _channel.invokeMethod("isInitSuccess");
   }
 
@@ -163,7 +163,7 @@ class Jverify {
    *          vlue = bool,是否支持
    * */
   Future<Map<dynamic, dynamic>> checkVerifyEnable() async {
-    print("$flutter_log" + "checkVerifyEnable");
+    debugPrint("$flutter_log" + "checkVerifyEnable");
     return await _channel.invokeMethod("checkVerifyEnable");
   }
 
@@ -179,7 +179,7 @@ class Jverify {
     if (timeOut >= 3000 && timeOut <= 10000) {
       para["timeOut"] = timeOut;
     }
-    print("$flutter_log" + "preLogin" + "$para");
+    debugPrint("$flutter_log" + "preLogin" + "$para");
 
     String method = "preLogin";
     var repeatError = isRepeatRequest(method: method);
@@ -200,7 +200,7 @@ class Jverify {
   * @since v2.4.3
   * */
   void clearPreLoginCache() {
-    print("$flutter_log" + "clearPreLoginCache");
+    debugPrint("$flutter_log" + "clearPreLoginCache");
     _channel.invokeMethod("clearPreLoginCache");
   }
 
@@ -212,8 +212,22 @@ class Jverify {
   @param completion 授权登录结果
  */
 
-  Future<Map?> authorization() async {
-    return _channel.invokeMethod<Map>("authorization");
+  Future<Map?> authorization({int timeOut = 10000}) async {
+    var para = Map();
+    if (timeOut >= 3000 && timeOut <= 10000) {
+      para["timeOut"] = timeOut;
+    }
+    debugPrint("$flutter_log" + "authorization" + "$para");
+
+    String method = "authorization";
+    var repeatError = isRepeatRequest(method: method);
+    if (repeatError == null) {
+      var result = await _channel.invokeMethod(method, para);
+      requestQueue.remove(method);
+      return result;
+    } else {
+      return repeatError;
+    }
   }
 }
 

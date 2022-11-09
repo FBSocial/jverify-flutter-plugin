@@ -209,11 +209,9 @@ class _MyAppState extends State<MyApp> {
       if (result) {
         jverify.preLogin().then((map) {
           print("预取号接口回调：${map.toString()}");
-          int code = map[f_code_key];
-          String message = map[f_msg_key];
           setState(() {
             _hideLoading();
-            _result = "[$code] message = $message";
+            _result = map.toString();
           });
         });
       } else {

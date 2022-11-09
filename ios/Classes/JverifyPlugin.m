@@ -99,7 +99,7 @@ NSObject<FlutterPluginRegistrar>* _jv_registrar;
     NSDictionary *arguments = [call arguments];
     NSString *appKey = arguments[@"appKey"];
     NSString *channel = arguments[@"channel"];
-    NSNumber *useIDFA = arguments[@"useIDFA"];
+//    NSNumber *useIDFA = arguments[@"useIDFA"];
     NSNumber *timeout = arguments[@"timeout"];
     
     JVAuthConfig *config = [[JVAuthConfig alloc] init];
@@ -184,13 +184,8 @@ NSObject<FlutterPluginRegistrar>* _jv_registrar;
      */
     [JVERIFICATIONService preLogin:timeout completion:^(NSDictionary *res) {
         JVLog(@"sdk preLogin completion :%@",res);
-        
-        NSDictionary *dict = @{
-                               j_code_key:res[@"code"],
-                               j_msg_key :res[@"message"] ? res[@"message"] : @""
-                               };
         dispatch_async(dispatch_get_main_queue(), ^{
-            result(dict);
+            result(res);
         });
     }];
 }
@@ -203,10 +198,18 @@ NSObject<FlutterPluginRegistrar>* _jv_registrar;
 
 
 #pragma mark - SDK 请求授权一键登录
-- (void)authorization:(FlutterMethodCall*) call result:(FlutterResult)r {
-    JVLog(@"Action - clearPreLoginCache::");
-    [JVERIFICATIONService authorization:5000 completion:^(NSDictionary *result) {
-        r(result);
+- (void)authorization:(FlutterMethodCall*) call result:(FlutterResult)result {
+    JVLog(@"Action - authorization:");
+    NSDictionary *arguments=  [call arguments];
+    NSNumber *timeoutNum = arguments[@"timeout"];
+    NSTimeInterval timeout = [timeoutNum longLongValue];
+    if (timeout <= 0) {
+        timeout = j_default_timeout;
+    }
+    [JVERIFICATIONService authorization:timeout completion:^(NSDictionary *res) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            result(res);
+        });
     }];
 }
 
