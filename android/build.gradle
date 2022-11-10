@@ -31,6 +31,13 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+
     lintOptions {
         disable 'InvalidPackage'
     }
@@ -52,7 +59,9 @@ android {
 }
 
 dependencies {
-//    implementation fileTree(include: '*.aar', dir: 'libs')
+    implementation fileTree(include: '*.aar', dir: 'libs')
     implementation 'cn.jiguang.sdk:jcore:2.8.2'
-    implementation 'cn.jiguang.sdk:jverification:2.7.2'
+//    implementation 'cn.jiguang.sdk:jverification:2.7.2'
+    implementation files('libs/jverification-android-release-8.2.4.jar')
+
 }

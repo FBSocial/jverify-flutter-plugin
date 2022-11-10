@@ -217,9 +217,9 @@ class Jverify {
     if (timeOut >= 3000 && timeOut <= 10000) {
       para["timeOut"] = timeOut;
     }
-    debugPrint("$flutter_log" + "authorization" + "$para");
+    debugPrint("$flutter_log" + "loginAuth" + "$para");
 
-    String method = "authorization";
+    String method = "loginAuth";
     var repeatError = isRepeatRequest(method: method);
     if (repeatError == null) {
       var result = await _channel.invokeMethod(method, para);
