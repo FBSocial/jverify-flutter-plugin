@@ -43,7 +43,7 @@ NSObject<FlutterPluginRegistrar>* _jv_registrar;
         [self isSetupClient:result];
     }else if([methodName isEqualToString:@"checkVerifyEnable"]){
         [self checkVerifyEnable:call result:result];
-    }else if([methodName isEqualToString:@"authorization"]){
+    }else if([methodName isEqualToString:@"loginAuth"]){
         [self authorization:call result:result];
     }else if([methodName isEqualToString:@"preLogin"]){
         [self preLogin:call result:result];
