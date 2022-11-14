@@ -1,39 +1,15 @@
 package com.jiguang.jverify;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.StateListDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import cn.jiguang.verifysdk.api.AuthPageEventListener;
 import cn.jiguang.verifysdk.api.JVerificationInterface;
-import cn.jiguang.verifysdk.api.JVerifyUIClickCallback;
-//import cn.jiguang.verifysdk.api.JVerifyUIConfig;
-import cn.jiguang.verifysdk.api.LoginSettings;
 import cn.jiguang.verifysdk.api.PreLoginListener;
 import cn.jiguang.verifysdk.api.RequestCallback;
 import cn.jiguang.verifysdk.api.VerifyListener;
@@ -60,7 +36,7 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
     /// 回调的提示信息，统一返回 flutter 为 message
     private static String j_msg_key = "message";
     /// 运营商信息
-    private static String j_opr_key = "operator";
+    private static String j_opr_key = "mobile";
     // 默认超时时间
     private static int j_default_timeout = 5000;
     // 重复请求
@@ -234,8 +210,9 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
                     Log.e(TAG, "verify fail，code=" + code + ", message =" + content);
                 }
                 Map<String, Object> map = new HashMap<>();
-                map.put(j_code_key, code);
-                map.put(j_msg_key, content);
+                map.put("code", code);
+                map.put("content", content);
+                map.put("mobile",securityNum);
 
                 runMainThread(map, result, null);
             }
@@ -270,7 +247,10 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void loginAuthInterface(final Boolean isSync, final MethodCall call, final Result result) {
         Log.d(TAG, "Action - loginAuthInterface:");
-        int timeOut = call.argument("timeout");
+        int timeOut = j_default_timeout;
+        if (call.hasArgument("timeOut")) {
+            timeOut = call.argument("timeOut");
+        }
 
         JVerificationInterface.loginAuth(context, timeOut, new VerifyListener() {
             @Override
@@ -281,9 +261,9 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
                     Log.d(TAG, "code=" + code + ", message=" + content);
                 }
                 Map<String, Object> map = new HashMap<>();
-                map.put(j_code_key, code);
-                map.put(j_msg_key, content);
-                map.put(j_opr_key, operator);
+                map.put("code", code);
+                map.put("loginToken", content);
+                map.put("operator", operator);
                 if (isSync) {
                     // 通过 channel 返回
                     runMainThread(map, null, "onReceiveLoginAuthCallBackEvent");
@@ -303,6 +283,5 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
             return null;
         }
     }
-
-
+    
 }

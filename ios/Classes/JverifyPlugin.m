@@ -1,9 +1,5 @@
 #import "JverifyPlugin.h"
 #import "JVERIFICATIONService.h"
-// 如果需要使用 idfa 功能所需要引入的头文件（可选）
-//#import <AdSupport/AdSupport.h>
-#define UIColorFromRGB(rgbValue)  ([UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0])
-
 
 #define JVLog(fmt, ...) NSLog((@"| JVER | iOS | " fmt), ##__VA_ARGS__)
 
@@ -13,12 +9,8 @@ static NSString *const j_result_key = @"result";
 static NSString *const j_code_key = @"code";
 /// 回调的提示信息，统一返回 flutter 为 message
 static NSString *const j_msg_key = @"message";
-/// 运营商信息
-static NSString *const j_opr_key = @"operator";
 /// 默认超时时间
 static long j_default_timeout = 5000;
-static BOOL needStartAnim = FALSE;
-static BOOL needCloseAnim = FALSE;
 @implementation JverifyPlugin
 
 NSObject<FlutterPluginRegistrar>* _jv_registrar;
@@ -99,7 +91,6 @@ NSObject<FlutterPluginRegistrar>* _jv_registrar;
     NSDictionary *arguments = [call arguments];
     NSString *appKey = arguments[@"appKey"];
     NSString *channel = arguments[@"channel"];
-//    NSNumber *useIDFA = arguments[@"useIDFA"];
     NSNumber *timeout = arguments[@"timeout"];
     
     JVAuthConfig *config = [[JVAuthConfig alloc] init];
