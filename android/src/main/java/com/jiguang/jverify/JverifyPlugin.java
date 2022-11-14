@@ -270,9 +270,7 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void loginAuthInterface(final Boolean isSync, final MethodCall call, final Result result) {
         Log.d(TAG, "Action - loginAuthInterface:");
-
-        Object autoFinish = getValueByKey(call, "autoDismiss");
-        Integer timeOut = call.argument("timeout");
+        int timeOut = call.argument("timeout");
 
         JVerificationInterface.loginAuth(context, timeOut, new VerifyListener() {
             @Override
