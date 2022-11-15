@@ -213,6 +213,7 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
                 map.put("code", code);
                 map.put("content", content);
                 map.put("mobile",securityNum);
+                map.put("operatorType", operator);
 
                 runMainThread(map, result, null);
             }
