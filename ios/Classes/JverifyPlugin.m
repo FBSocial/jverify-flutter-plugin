@@ -43,7 +43,8 @@ NSObject<FlutterPluginRegistrar>* _jv_registrar;
         [self getSMSCode:call result:result];
     }else if ([methodName isEqualToString:@"setGetCodeInternal"]){
         [self setGetCodeInternal:call result:result];
-    }
+    }else if([methodName isEqualToString:@"clearPreLoginCache"])
+        [self clearPreLoginCache:call result:result];
     else {
         result(FlutterMethodNotImplemented);
     }
