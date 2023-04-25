@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#define JVER_VERSION_NUMBER 8.1.9
+#define JVER_VERSION_NUMBER 8.2.2
 
 @interface JVAuthConfig : NSObject
 
@@ -38,6 +38,20 @@
  * 成功YES, 失败NO
  */
 + (BOOL)isSetupClient;
+
+/**
+ 获取手机号校验token
+
+ @param completion token相关信息。
+ */
++ (void)getToken:(void (^)(NSDictionary *result))completion;
+
+/**
+ 获取手机号校验token。和+ (void)getToken:(void (^)(NSDictionary *result))completion;实现的功能一致
+ @param timeout 超时。单位ms,默认为5000ms。合法范围(0,10000]
+ @param completion token相关信息。
+ */
++ (void)getToken:(NSTimeInterval)timeout completion:(void (^)(NSDictionary *result))completion;
 
 /**
  授权登录 预取号
