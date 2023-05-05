@@ -17,8 +17,8 @@ A new flutter plugin project.
   s.dependency 'Flutter'
   s.dependency 'JCore','4.2.0'
   s.vendored_frameworks = "libs/account_login_sdk_noui_core.framework",
-                             "libs/EAccountApiSDK.framework",
-                             "libs/TYRZUISDK.xcframework"
+                          "libs/EAccountApiSDK.framework",
+                          "libs/TYRZUISDK.xcframework/ios-arm64_arm64e_armv7_armv7s/TYRZUISDK.framework"
   s.vendored_libraries = 'libs/*.a'
   s.frameworks = 'CoreLocation','CFNetwork','CoreFoundation','CoreTelephony','SystemConfiguration','Security','CoreGraphics','MobileCoreServices','AVFoundation'
   s.libraries = 'resolv','z','c++.1','sqlite3'
