@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -203,7 +205,7 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
 
         JVerificationInterface.preLogin(context, timeOut, new PreLoginListener() {
             @Override
-            public void onResult(int code, String content, String operator, String securityNum) {
+            public void onResult(int code, String content, String operator, String securityNum, JSONObject jsonObject) {
                 if (code == 7000) {//code: 返回码，7000代表获取成功，其他为失败，详见错误码描述
                     Log.d(TAG, "verify success, message =" + content);
                 } else {
@@ -255,7 +257,7 @@ public class JverifyPlugin implements FlutterPlugin, MethodCallHandler {
 
         JVerificationInterface.loginAuth(context, timeOut, new VerifyListener() {
             @Override
-            public void onResult(int code, String content, String operator) {
+            public void onResult(int code, String content, String operator, JSONObject jsonObject) {
                 if (code == 6000) {
                     Log.d(TAG, "code=" + code + ", token=" + content + " ,operator=" + operator);
                 } else {
