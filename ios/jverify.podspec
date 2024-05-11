@@ -16,11 +16,11 @@ A new flutter plugin project.
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.dependency 'JCore','4.2.0'
-  s.vendored_frameworks = "libs/account_login_sdk_noui_core.framework",
-                          "libs/EAccountApiSDK.framework",
-                          "libs/TYRZUISDK.xcframework/ios-arm64_arm64e_armv7_armv7s/TYRZUISDK.framework"
+  s.vendored_frameworks = "libs/EAccountApiSDK.xcframework",
+                          "libs/OAuth.xcframework",
+                          "libs/TYRZUISDK.xcframework"
   s.vendored_libraries = 'libs/*.a'
-  s.frameworks = 'CoreLocation','CFNetwork','CoreFoundation','CoreTelephony','SystemConfiguration','Security','CoreGraphics','MobileCoreServices','AVFoundation'
+  s.frameworks = 'CoreLocation','Network','AdSupport','CFNetwork','CoreFoundation','CoreTelephony','SystemConfiguration','Security','CoreGraphics','MobileCoreServices','AVFoundation'
   s.libraries = 'resolv','z','c++.1','sqlite3'
   s.ios.deployment_target = '8.0'
   s.static_framework = true
