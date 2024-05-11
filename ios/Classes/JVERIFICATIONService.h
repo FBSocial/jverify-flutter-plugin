@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#define JVER_VERSION_NUMBER 8.2.2
+#define JVER_VERSION_NUMBER 8.4.1
 
 @interface JVAuthConfig : NSObject
 
@@ -25,6 +25,25 @@
 @property(nonatomic, assign) NSTimeInterval timeout;
 /* authBlock 初始化回调*/
 @property (nonatomic, copy) void (^authBlock)(NSDictionary *result);
+@end
+
+#pragma mark -- 合规相关
+
+@interface JVCollectControl : NSObject
+
+/* model 设备型号。设置为NO,不采集设备型号信息。默认为YES。 */
+@property (nonatomic, assign) BOOL model;
+/* osVersionName 系统版本。设置为NO,不采集系统版本信息。默认为YES。 */
+@property (nonatomic, assign) BOOL osVersionName;
+/* resolution 设备屏幕分辨率。设置为NO,不采集屏幕分辨率信息。默认为YES。 */
+@property (nonatomic, assign) BOOL resolution;
+/* language 设备系统语言。设置为NO,不采集设备系统语言信息。默认为YES。 */
+@property (nonatomic, assign) BOOL language;
+/* systemName 设备系统名称。设置为NO,不采集设备系统名称信息。默认为YES。 */
+@property (nonatomic, assign) BOOL systemName;
+/* gps 经纬度信息。设置为NO,不采集经纬度信息。默认为YES。 */
+@property (nonatomic, assign) BOOL gps;
+
 @end
 
 
@@ -88,6 +107,12 @@
 + (BOOL)checkVerifyEnable;
 
 /*!
+ * @abstract 校验预取号缓存是否有效
+ * 初始化成功后API生效
+ */
++ (BOOL)validePreloginCache;
+
+/*!
  * @abstract 清除预取号缓存
  */
 + (void)clearPreLoginCache;
@@ -111,6 +136,20 @@
  *  @param intervalTime  时间间隔，单位 ms
  */
 + (void)setGetCodeInternal:(NSTimeInterval)intervalTime;
+
+/**
+ *  获取注册id
+ *  v8.2.5之后新增接口
+ *  @param registerBlock     返回注册id（registerID）
+ */
++ (void)getRegisterID:(void(^_Nullable)(NSString * _Nullable registerID))registerBlock;
+
+/**
+ 数据采集控制
+
+ @param control 数据采集配置。
+ */
++ (void)setCollectControl:(JVCollectControl *)control;
 
 @end
 
