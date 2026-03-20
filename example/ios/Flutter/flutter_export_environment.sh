@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/Users/leaf/fvm/versions/3.7.8"
-export "FLUTTER_APPLICATION_PATH=/Users/leaf/idreamsky/jverify-flutter-plugin/example"
+export "FLUTTER_ROOT=/Users/ids/fvm/versions/3.27.4"
+export "FLUTTER_APPLICATION_PATH=/Users/ids/Desktop/WorkSpace/jverify-flutter-plugin/example"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
